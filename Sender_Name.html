@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NBTC Sender Name Auto-Fill</title>
+  <style>
+    :root {
+      box-sizing: border-box;
+      color-scheme: light;
+      --bg: #f3f6fb;
+      --card: #fff;
+      --tx: #172338;
+      --mu: #627187;
+      --bd: #dce4ef;
+      --ac: #315fe8;
+      --acx: #fff;
+      --ok: #1a7f4b;
+      --okb: #e3f5ea;
+      --er: #b42318;
+      --erb: #fdeceb;
+      --wn: #9a6700;
+      --wnb: #fff4d6;
+      --soft: #edf3ff;
+      --shadow: 0 12px 32px rgba(27, 49, 86, .07);
+      --focus: rgba(49, 95, 232, .2)
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg: #101725;
+        --card: #182235;
+        --tx: #ecf2fc;
+        --mu: #a0aec3;
+        --bd: #2b3a52;
+        --ac: #82a2ff;
+        --acx: #101725;
+        --ok: #70daa4;
+        --okb: #173a2b;
+        --er: #ff938b;
+        --erb: #432522;
+        --wn: #f5ca67;
+        --wnb: #403514;
+        --soft: #202f4b;
+        --shadow: 0 12px 32px rgba(0, 0, 0, .2);
+        --focus: rgba(130, 162, 255, .24)
+      }
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #101725;
+      --card: #182235;
+      --tx: #ecf2fc;
+      --mu: #a0aec3;
+      --bd: #2b3a52;
+      --ac: #82a2ff;
+      --acx: #101725;
+      --ok: #70daa4;
+      --okb: #173a2b;
+      --er: #ff938b;
+      --erb: #432522;
+      --wn: #f5ca67;
+      --wnb: #403514;
+      --soft: #202f4b;
+      --shadow: 0 12px 32px rgba(0, 0, 0, .2);
+      --focus: rgba(130, 162, 255, .24)
+    }
+
+    html {
+      scroll-padding-top: 20px
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+      background:
+        radial-gradient(ellipse at 50% -18%, rgba(80, 125, 235, .13), transparent 58%),
+        var(--bg);
+      color: var(--tx);
+      font-family: "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.6
+    }
+
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 48px 24px 64px
+    }
+
+    .page-header {
+      max-width: 780px;
+      margin: 0 auto 28px;
+      text-align: center
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 10px;
+      color: var(--ac);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .09em;
+      text-transform: uppercase
+    }
+
+    .eyebrow::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--ac);
+      content: ""
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(25px, 4vw, 34px);
+      font-weight: 750;
+      letter-spacing: -.035em;
+      line-height: 1.25
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -.01em
+    }
+
+    .sub {
+      color: var(--mu);
+      margin: 0;
+      font-size: 14px
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow)
+    }
+
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin: 0 0 24px
+    }
+
+    .step {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--bd);
+      background: var(--card);
+      color: var(--mu);
+      font-size: 12px;
+      font-weight: 600;
+      transition: background .2s ease, color .2s ease, border-color .2s ease
+    }
+
+    .step::first-letter {
+      font-weight: 700
+    }
+
+    .step.on {
+      background: var(--ac);
+      color: var(--acx);
+      border-color: var(--ac);
+      box-shadow: 0 4px 12px rgba(49, 95, 232, .2)
+    }
+
+    #drop {
+      border: 1.5px dashed #aebfe0;
+      border-radius: 13px;
+      padding: 28px 18px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--mu);
+      background: var(--soft);
+      transition: border-color .18s ease, background .18s ease, transform .18s ease
+    }
+
+    #drop:hover,
+    #drop:focus-visible,
+    #drop.over {
+      border-color: var(--ac);
+      outline: none;
+      transform: translateY(-1px)
+    }
+
+    .upload-icon {
+      display: grid;
+      width: 46px;
+      height: 46px;
+      margin: 0 auto 10px;
+      place-items: center;
+      border: 1px solid var(--bd);
+      border-radius: 13px;
+      background: var(--card);
+      color: var(--ac)
+    }
+
+    .upload-icon svg {
+      width: 22px;
+      height: 22px
+    }
+
+    .upload-title {
+      display: block;
+      color: var(--tx);
+      font-weight: 650
+    }
+
+    .upload-hint {
+      display: block;
+      margin-top: 3px;
+      font-size: 12px
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 9px;
+      border: 1px solid var(--bd);
+      background: var(--card);
+      color: var(--tx);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 650;
+      transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease
+    }
+
+    button:not(:disabled):hover {
+      border-color: var(--ac);
+      transform: translateY(-1px)
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 1px
+    }
+
+    button.p {
+      background: var(--ac);
+      color: var(--acx);
+      border-color: var(--ac);
+      box-shadow: 0 4px 12px rgba(49, 95, 232, .18)
+    }
+
+    button.p:not(:disabled):hover {
+      box-shadow: 0 7px 16px rgba(49, 95, 232, .25)
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .file-actions {
+      margin-top: 13px
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+      gap: 14px
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--mu);
+      margin-bottom: 5px
+    }
+
+    input,
+    select {
+      font: inherit;
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 11px;
+      border-radius: 9px;
+      border: 1px solid var(--bd);
+      background: var(--card);
+      color: var(--tx);
+      transition: border-color .16s ease, box-shadow .16s ease
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--ac);
+      box-shadow: 0 0 0 3px var(--focus);
+      outline: none
+    }
+
+    .wrap {
+      overflow-x: auto
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 10px 11px;
+      border-bottom: 1px solid var(--bd);
+      white-space: nowrap
+    }
+
+    th {
+      color: var(--mu);
+      font-weight: 650;
+      background: var(--bg)
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0
+    }
+
+    tbody tr:not(.bad):not(.warn):hover td {
+      background: var(--soft)
+    }
+
+    .preview-wrap {
+      max-height: 440px;
+      border: 1px solid var(--bd);
+      border-radius: 10px
+    }
+
+    #prevTbl {
+      min-width: 780px
+    }
+
+    #mapTbl {
+      min-width: 580px
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 650;
+      padding: 3px 9px;
+      border-radius: 99px
+    }
+
+    .ok {
+      background: var(--okb);
+      color: var(--ok)
+    }
+
+    .er {
+      background: var(--erb);
+      color: var(--er)
+    }
+
+    .wn {
+      background: var(--wnb);
+      color: var(--wn)
+    }
+
+    tr.bad td {
+      background: var(--erb)
+    }
+
+    tr.warn td {
+      background: var(--wnb)
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 12px
+    }
+
+    .stats .mu {
+      margin-left: auto
+    }
+
+    .hide {
+      display: none
+    }
+
+    .mu {
+      color: var(--mu);
+      font-size: 13px
+    }
+
+    @media (max-width: 600px) {
+      main {
+        padding: 30px 14px 40px
+      }
+
+      .page-header {
+        margin-bottom: 22px
+      }
+
+      .sub {
+        font-size: 13px
+      }
+
+      .steps {
+        gap: 6px;
+        margin-bottom: 18px
+      }
+
+      .step {
+        padding: 6px 9px;
+        font-size: 11px
+      }
+
+      .card {
+        padding: 17px 14px;
+        border-radius: 13px
+      }
+
+      #drop {
+        padding: 23px 12px
+      }
+
+      .stats .mu {
+        width: 100%;
+        margin-left: 0
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header class="page-header">
+      <span class="eyebrow">NBTC · Sender Name</span>
+      <h1>จัดเตรียมไฟล์ Sender Name</h1>
+      <p class="sub">วางไฟล์รายชื่อ แล้วระบบแมตคอลัมน์ เติมค่าคงที่ ตรวจความถูกต้อง และส่งออกเป็นไฟล์ฟอร์ม กสทช.
+        ให้อัตโนมัติ (หน้าตัวอย่าง ประมวลผลในเบราว์เซอร์ ไม่ส่งข้อมูลออกไปที่ใด)</p>
+    </header>
+    <div class="steps"><span class="step on" id="s1">1 วางไฟล์</span><span class="step" id="s2">2 ตรวจการแมต</span><span
+        class="step" id="s3">3 ตรวจข้อมูล</span><span class="step" id="s4">4 ดาวน์โหลด</span></div>
+
+    <div class="card">
+      <h2>1 วางไฟล์ต้นทาง</h2>
+      <div id="drop" role="button" tabindex="0" aria-controls="file" aria-label="เลือกหรือลากไฟล์ Excel หรือ CSV มาวาง">
+        <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"></path>
+            <path d="M5 14.5v4A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-4"></path>
+          </svg></span>
+        <span class="upload-title">ลากไฟล์มาวาง หรือคลิกเพื่อเลือกไฟล์</span>
+        <span class="upload-hint">รองรับ .xlsx, .xls และ .csv</span>
+        <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hide">
+      </div>
+      <div class="row file-actions"><button id="demo">ลองด้วยไฟล์ตัวอย่าง</button><span class="mu"
+          id="fname"></span></div>
+    </div>
+
+    <div class="card">
+      <h2>ค่าคงที่ (เติมทุกแถว)</h2>
+      <p class="mu" style="margin:0 0 10px">sender_id = ขึ้นต้น + corporate_id + ตัวคั่น + senderName ·
+        corporateOffense, senderOffense = N · วันที่ทั้งหมดและ senderNameObjective เว้นว่าง</p>
+      <div class="grid">
+        <div><label>licenseName</label><input id="licenseName" value="บริษัท เทคโนเวท โซลูชั่นส์ จำกัด"></div>
+        <div><label>juristic_id (13 หลัก)</label><input id="juristic_id" value="0125548000089" inputmode="numeric">
+        </div>
+        <div><label>corporateType</label><input id="corporateType" value="C"></div>
+        <div><label>senderStatus</label><input id="senderStatus" value="1"></div>
+        <div><label>sender_id ขึ้นต้น</label><input id="idPrefix" value="TKV-"></div>
+        <div><label>sender_id ตัวคั่นก่อน senderName</label><input id="idSuffix" value="@"></div>
+      </div>
+    </div>
+
+    <div class="card hide" id="mapCard">
+      <h2>2 การแมตคอลัมน์ <span class="mu">แก้ได้ถ้าระบบเดาผิด</span></h2>
+      <div class="wrap">
+        <table id="mapTbl"></table>
+      </div>
+    </div>
+
+    <div class="card hide" id="prevCard">
+      <h2>3 ตรวจข้อมูลก่อนส่งออก</h2>
+      <div class="grid" style="margin-bottom:12px">
+        <div><label>ความยาว senderName ต่ำสุด</label><input id="minLen" type="number" value="3"></div>
+        <div><label>ความยาว senderName สูงสุด</label><input id="maxLen" type="number" value="11"></div>
+        <div><label>อักขระที่อนุญาต (regex)</label><input id="pat" value="^[A-Za-z0-9 .\-]+$"></div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="wrap preview-wrap">
+        <table id="prevTbl"></table>
+      </div>
+      <div class="row" style="margin-top:14px"><button class="p" id="dl">ดาวน์โหลดไฟล์ฟอร์ม .xlsx</button><span
+          class="mu" id="dlmsg"></span></div>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    const COLS = ["licenseName", "juristic_id", "corporateName", "corporate_id", "corporateType", "hostName", "host_id", "sender_id", "senderName", "senderStatus", "corporateOffense", "senderOffense", "registerDate", "blockedDate", "cancelDate", "link_domain", "createdDate", "lastModify", "senderNameObjective"];
+    const MAPPABLE = ["corporateName", "corporate_id", "hostName", "host_id", "senderName", "link_domain"];
+    const SYN = {
+      senderName: ["sendername", "sender", "ชื่อผู้ส่ง", "ชื่อsender", "ชื่อที่ใช้ส่ง", "ชื่อส่ง"],
+
+      corporateName: ["corporatename", "company", "ชื่อบริษัท", "ชื่อนิติบุคคล", "บริษัท", "ลูกค้า", "customer"],
+      corporate_id: ["corporateid", "tax", "taxid", "เลขผู้เสียภาษี", "เลขประจำตัวผู้เสียภาษี", "เลขนิติบุคคล", "juristic"],
+      hostName: ["hostname", "host", "ชื่อโฮสต์"], host_id: ["hostid", "รหัสโฮสต์"],
+
+      link_domain: ["linkdomain", "domain", "url", "link", "เว็บไซต์", "เว็บ"]
+    };
+    const DEMO = [["ชื่อบริษัท", "เลขผู้เสียภาษี", "Sender Name", "เว็บไซต์", "วันที่ลงทะเบียน"],
+    ["บริษัท ตัวอย่างหนึ่ง จำกัด", "0105500000011", "SHOPEASY", "shopeasy.example.com", "2026-11-01"],
+    ["บริษัท ตัวอย่างสอง จำกัด", "0105500000022", "BANKINFO", "bankinfo.example.com", "2026-11-02"],
+    ["บริษัท ตัวอย่างสาม จำกัด", "105500000033", "DELIVERYTHAI", "", "2026-11-02"],
+    ["บริษัท ตัวอย่างสี่ จำกัด", "0105500000044", "SHOPEASY", "shop2.example.com", "2026-11-03"],
+    ["บริษัท ตัวอย่างห้า จำกัด", "0105500000055", "", "", "2026-11-03"],
+    ["บริษัท ตัวอย่างหก จำกัด", "0105500000066", "ร้านค้า", "", "2026-11-04"]];
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+    const norm = s => String(s).toLowerCase().replace(/[\s_\-.]/g, "");
+    let headers = [], data = [], map = {}, out = [];
+    function step(n) {for (let i = 1; i <= 4; i++)$("s" + i).classList.toggle("on", i <= n)}
+    function autoMap() {
+      map = {}; const used = new Set();
+      MAPPABLE.forEach(f => {
+        let best = -1, sc = 0;
+        headers.forEach((h, i) => {
+          if (used.has(i)) return; const n = norm(h); let s = 0;
+          if (n === norm(f)) s = 1; else if (SYN[f].some(w => n === w)) s = .95; else if (SYN[f].some(w => n.includes(w) || (w.length > 3 && w.includes(n) && n.length > 2))) s = .7;
+          if (s > sc) {sc = s; best = i}
+        });
+        if (best >= 0) {map[f] = {i: best, s: sc}; used.add(best)}
+      });
+    }
+    function renderMap() {
+      let h = "<tr><th>ช่องในฟอร์ม กสทช.</th><th>คอลัมน์จากไฟล์ของคุณ</th><th>ความมั่นใจ</th></tr>";
+      MAPPABLE.forEach(f => {
+        const m = map[f];
+        const opts = '<option value="-1">— ไม่ใช้ —</option>' + headers.map((x, i) => `<option value="${i}"${m && m.i === i ? " selected" : ""}>${esc(x)}</option>`).join("");
+        const tag = !m ? '<span class="tag wn">ไม่พบ</span>' : m.s >= .95 ? '<span class="tag ok">ตรง</span>' : '<span class="tag wn">เดา โปรดตรวจ</span>';
+        h += `<tr><td><b>${f}</b></td><td><select data-f="${f}">${opts}</select></td><td>${tag}</td></tr>`
+      });
+      $("mapTbl").innerHTML = h;
+      $("mapTbl").querySelectorAll("select").forEach(s => s.onchange = () => {const v = +s.value; if (v < 0) delete map[s.dataset.f]; else map[s.dataset.f] = {i: v, s: 1}; build()});
+    }
+    function cell(r, f) {const m = map[f]; return m ? String(r[m.i] ?? "").trim() : ""}
+    function build() {
+      const minL = +$("minLen").value, maxL = +$("maxLen").value; let re; try {re = new RegExp($("pat").value)} catch (e) {re = /.*/}
+      const seen = {};
+      out = data.map(r => {
+        const o = {}; COLS.forEach(c => o[c] = "");
+        o.licenseName = $("licenseName").value; o.juristic_id = $("juristic_id").value;
+        o.corporateType = $("corporateType").value; o.senderStatus = $("senderStatus").value;
+        o.corporateOffense = "N"; o.senderOffense = "N";
+        MAPPABLE.forEach(f => o[f] = cell(r, f));
+        o.corporate_id = o.corporate_id.replace(/\D/g, "");
+        o.sender_id = $("idPrefix").value + o.corporate_id + $("idSuffix").value + o.senderName;
+        if (o.link_domain) o.link_domain = '"' + o.link_domain.replace(/"/g, "") + '"';
+        const iss = [], wr = [];
+        const sn = o.senderName;
+        if (!sn) iss.push("ไม่มี senderName");
+        else {
+          if (sn.length < minL || sn.length > maxL) iss.push(`ความยาว ${sn.length} ตัว (ต้อง ${minL}-${maxL})`);
+          if (!re.test(sn)) iss.push("มีอักขระไม่อนุญาต");
+          seen[sn] = (seen[sn] || 0) + 1
+        }
+        if (o.corporate_id && o.corporate_id.length !== 13) wr.push("เลขนิติบุคคลไม่ครบ 13 หลัก");
+        if (!o.corporate_id) wr.push("ไม่มีเลขนิติบุคคล");
+        o._i = iss; o._w = wr; return o
+      });
+      out.forEach(o => {if (o.senderName && seen[o.senderName] > 1) o._i.push("senderName ซ้ำ")});
+      renderPrev();
+    }
+    function renderPrev() {
+      const bad = out.filter(o => o._i.length).length, warn = out.filter(o => !o._i.length && o._w.length).length, ok = out.length - bad - warn;
+      $("stats").innerHTML = `<span class="tag ok">พร้อมส่ง ${ok}</span><span class="tag wn">ควรตรวจ ${warn}</span><span class="tag er">ต้องแก้ ${bad}</span><span class="mu">ทั้งหมด ${out.length} แถว</span>`;
+      let h = "<tr><th>#</th><th>สถานะ</th><th>corporateName</th><th>corporate_id</th><th>sender_id</th><th>senderName</th><th>link_domain</th><th>หมายเหตุ</th></tr>";
+      out.forEach((o, i) => {
+        const cls = o._i.length ? "bad" : o._w.length ? "warn" : "";
+        const st = o._i.length ? '<span class="tag er">แก้</span>' : o._w.length ? '<span class="tag wn">ตรวจ</span>' : '<span class="tag ok">ผ่าน</span>';
+        h += `<tr class="${cls}"><td>${i + 1}</td><td>${st}</td><td>${esc(o.corporateName)}</td><td>${esc(o.corporate_id)}</td><td>${esc(o.sender_id)}</td><td>${esc(o.senderName)}</td><td>${esc(o.link_domain)}</td><td>${esc(o._i.concat(o._w).join(", "))}</td></tr>`
+      });
+      $("prevTbl").innerHTML = h; step(3);
+    }
+    function load(rows, name) {
+      rows = rows.filter(r => r.some(c => String(c ?? "").trim() !== ""));
+      if (rows.length < 2) {alert("ไม่พบข้อมูลในไฟล์"); return }
+      headers = rows[0].map(x => String(x ?? "").trim()); data = rows.slice(1);
+      $("fname").textContent = name + " · " + data.length + " แถว";
+      autoMap(); renderMap(); $("mapCard").classList.remove("hide"); $("prevCard").classList.remove("hide"); step(2); build();
+    }
+    function readFile(f) {
+      const rd = new FileReader();
+      rd.onload = e => {
+        try {
+          const wb = XLSX.read(e.target.result, {type: "array"});
+          const ws = wb.Sheets[wb.SheetNames[0]]; load(XLSX.utils.sheet_to_json(ws, {header: 1, raw: false, defval: ""}), f.name)
+        }
+        catch (err) {alert("อ่านไฟล์ไม่สำเร็จ")}
+      };
+      rd.readAsArrayBuffer(f);
+    }
+    const drop = $("drop");
+    drop.onclick = () => $("file").click();
+    drop.onkeydown = e => {
+      if (e.key === "Enter" || e.key === " ") {e.preventDefault(); $("file").click()}
+    };
+    $("file").onchange = e => e.target.files[0] && readFile(e.target.files[0]);
+    ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => {e.preventDefault(); drop.classList.add("over")}));
+    ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => {e.preventDefault(); drop.classList.remove("over")}));
+    drop.addEventListener("drop", e => {const f = e.dataTransfer.files[0]; if (f) readFile(f)});
+    $("demo").onclick = () => load(DEMO, "ไฟล์ตัวอย่าง");
+    ["licenseName", "juristic_id", "corporateType", "senderStatus", "idPrefix", "idSuffix", "minLen", "maxLen", "pat"].forEach(id => $(id).addEventListener("input", () => {if (data.length) build()}));
+    $("dl").onclick = async () => {
+      const msg = $("dlmsg");
+      if (out.some(o => o._i.length) && !confirm("ยังมีแถวที่ต้องแก้ ดาวน์โหลดต่อหรือไม่?")) return;
+      const aoa = [COLS].concat(out.map(o => COLS.map(c => String(o[c] ?? ""))));
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      COLS.forEach((c, ci) => {for (let r = 1; r < aoa.length; r++) {const a = XLSX.utils.encode_cell({r, c: ci}); if (ws[a]) ws[a].t = "s"} });
+      ws["!cols"] = COLS.map(c => ({wch: Math.max(14, c.length + 2)}));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+      const buf = XLSX.write(wb, {bookType: "xlsx", type: "array"});
+      try {
+        const d = await claude.use("downloads");
+        if (!d) {msg.textContent = "เบราว์เซอร์นี้ดาวน์โหลดจากหน้านี้ไม่ได้"; return }
+        await d.save({filename: "Form_Sender_Name_To_NBTC_filled.xlsx", data: buf}); step(4); msg.textContent = "บันทึกแล้ว"
+      }
+      catch (e) {msg.textContent = (e && e.code === "declined") ? "ยกเลิกการบันทึก" : "บันทึกไม่สำเร็จ"}
+    };
+  </script>
+</body>
+
+</html>
